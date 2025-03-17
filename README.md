@@ -59,8 +59,8 @@ face_recognition_attendance/
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/face-recognition-attendance.git
-cd face-recognition-attendance
+git clone https://github.com/wyasyn/research-project-backend.git
+cd research-project-backend
 ```
 
 ### 2️⃣ Setup Virtual Environment
