@@ -1,5 +1,4 @@
 from flask import Blueprint, request, jsonify
-from controllers.attendance_controller import mark_attendance
 
 attendance_bp = Blueprint('attendance', __name__)
 
