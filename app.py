@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from config import configure_cors, configure_db, db
 from routes.user_routes import user_bp
 from routes.auth_routes import auth_bp
@@ -28,6 +28,10 @@ app = create_app()
 # Create tables (only for development, avoid in production)
 with app.app_context():
     db.create_all()  # Use Flask-Migrate for production migrations
+    
+@app.route("/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "healthy", "message": "Server is running!"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

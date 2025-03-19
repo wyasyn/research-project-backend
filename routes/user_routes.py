@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app, send_file
+from flask import Blueprint, after_this_request, request, jsonify, current_app, send_file
 import pandas as pd
 import tempfile
 from models import AttendanceRecord, AttendanceSession, User
@@ -8,13 +8,17 @@ import os
 user_bp = Blueprint('user', __name__)
 
 # Get paginated users
-@user_bp.route('/')
+@user_bp.route('/', methods=["GET"])
 def get_all_users():
     try:
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 10))
 
         pagination = User.query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        if not pagination.items:
+            return jsonify({"users": [], "message": "No users found."}), 200
+
         users_list = [
             {
                 "id": user.id,
@@ -40,7 +44,7 @@ def get_all_users():
 
 # Get a user's attendance (with pagination)
 @user_bp.route("/<user_id>", methods=["GET"])
-def get_student_attendance(user_id):
+def get_user_attendance(user_id):
     user = User.query.filter_by(user_id=user_id).first()
     if not user:
         return jsonify({"message": "User not found."}), 404
@@ -49,6 +53,10 @@ def get_student_attendance(user_id):
     per_page = int(request.args.get("per_page", 10))
 
     attendance_query = AttendanceRecord.query.filter_by(user_id=user_id)
+    
+    if not attendance_query.count():
+        return jsonify({"message": "No attendance records found for this user."}), 404
+
     pagination = attendance_query.paginate(page=page, per_page=per_page, error_out=False)
 
     return jsonify({
@@ -60,7 +68,7 @@ def get_student_attendance(user_id):
         "records": [
             {"session_id": record.session_id, "timestamp": record.timestamp}
             for record in pagination.items
-        ] if pagination.items else [],  # ✅ Prevent returning `None`
+        ] if pagination.items else [],  
         "page": pagination.page,
         "per_page": pagination.per_page,
         "total_pages": pagination.pages,
@@ -86,6 +94,9 @@ def download_user_attendance(user_id):
         .filter(AttendanceRecord.user_id == user_id)
         .all()
     )
+    if not attendance_records:
+        return jsonify({"message": "No attendance records found for this user."}), 404
+
 
     data = [
         {
@@ -106,7 +117,10 @@ def download_user_attendance(user_id):
 
     response = send_file(temp_path, as_attachment=True, download_name=f"student_{user_id}_attendance.xlsx")
 
-    os.remove(temp_path)  # 🛠 Delete file after sending
+    @after_this_request
+    def cleanup(response):
+        os.remove(temp_path)
+        return response
     return response
 
 
@@ -140,6 +154,10 @@ def edit_user(id):
     name = data.get("name")
     email = data.get("email")
     image_url = data.get("image_url")
+    
+    if not any([user_id, name, email, image_url]):
+        return jsonify({"message": "No updates provided."}), 400
+
 
     # Validate and update fields
     if name:

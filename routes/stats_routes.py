@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 from models import AttendanceRecord, AttendanceSession, User
 from sqlalchemy import func
 
-stats_bp = Blueprint('attendance', __name__)
+stats_bp = Blueprint('stats', __name__)
+
 
 @stats_bp.route("/", methods=["GET"])
 def get_statistics():

@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["argmin", "imencode", "isnot", "jsonify", "MJPEG", "tobytes"]
+  "cSpell.words": [
+    "argmin",
+    "dotenv",
+    "imencode",
+    "isnot",
+    "jsonify",
+    "MJPEG",
+    "tobytes"
+  ]
 }
