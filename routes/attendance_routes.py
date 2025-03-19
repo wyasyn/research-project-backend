@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, current_app, send_file
 import pandas as pd
 from config import db
 from models import AttendanceRecord, AttendanceSession, User
+import tempfile
+import os
 
 attendance_bp = Blueprint('attendance', __name__)
 
@@ -88,7 +90,7 @@ def get_attendance_records(session_id):
         records_data = [
             {
                 "user_id": record.user_id,
-                "name": record.name,
+                "name": User.query.filter_by(user_id=record.user_id).first().name, 
                 "timestamp": record.timestamp,
             }
             for record in records
@@ -114,6 +116,7 @@ def get_attendance_records(session_id):
         return jsonify({"message": "An error occurred while fetching attendance records."}), 500
 
 # Route to download attendance session as Excel
+
 @attendance_bp.route("/<int:session_id>/download", methods=["GET"])
 def download_attendance_session(session_id):
     session = AttendanceSession.query.get(session_id)
@@ -134,7 +137,36 @@ def download_attendance_session(session_id):
         })
 
     df = pd.DataFrame(data)
-    file_path = f"attendance_session_{session_id}.xlsx"
-    df.to_excel(file_path, index=False)
 
-    return send_file(file_path, as_attachment=True, download_name=file_path)
+    # Use a temporary file for secure cleanup
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
+        temp_path = temp_file.name
+        df.to_excel(temp_path, index=False)
+
+    response = send_file(temp_path, as_attachment=True, download_name=f"attendance_session_{session_id}.xlsx")
+
+    os.remove(temp_path)  # 🛠 Delete temp file after sending
+    return response
+
+# Mark Attendance manually
+@attendance_bp.route('/mark', methods=["POST"])
+def mark_attendance():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    session_id = data.get("session_id")
+
+    # Validate input
+    if not user_id or not session_id:
+        return jsonify({"message": "User ID and session ID are required."}), 400
+
+    # Check if the record already exists
+    existing_record = AttendanceRecord.query.filter_by(user_id=user_id, session_id=session_id).first()
+    if existing_record:
+        return jsonify({"message": "User has already been marked present in this session."}), 409  # Conflict status
+
+    # Insert new attendance record
+    new_record = AttendanceRecord(user_id=user_id, session_id=session_id)
+    db.session.add(new_record)
+    db.session.commit()
+
+    return jsonify({"message": "Attendance recorded successfully!"}), 201

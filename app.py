@@ -10,8 +10,8 @@ def create_app():
     app = Flask(__name__)
 
     # Configure database and CORS
-    configure_db()
-    configure_cors()
+    configure_db(app)
+    configure_cors(app)
 
     # Register routes
     app.register_blueprint(user_bp, url_prefix='/users')
