@@ -14,7 +14,7 @@ def register():
         user_id = data.get("user_id")
         name = data.get("name")
         email = data.get("email")
-        image_url = data.get("image_url")  # Expecting a URL instead of an uploaded file
+        image_url = data.get("image_url")
 
         if not user_id or not name or not email or not image_url:
             return jsonify({"message": "All fields are required."}), 400

@@ -1,16 +1,24 @@
 from flask import Flask
 from config import configure_cors, configure_db, db
-from routes import register_routes
+from routes.user_routes import user_bp
+from routes.auth_routes import auth_bp
+from routes.recognize_routes import recognize_bp
+from routes.attendance_routes import attendance_bp
+from routes.stats_routes import stats_bp
 
 def create_app():
     app = Flask(__name__)
 
     # Configure database and CORS
-    configure_db(app)
-    configure_cors(app)
+    configure_db()
+    configure_cors()
 
     # Register routes
-    register_routes(app)
+    app.register_blueprint(user_bp, url_prefix='/users')
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(recognize_bp, url_prefix='/recognize')
+    app.register_blueprint(attendance_bp, url_prefix='/attendance')
+    app.register_blueprint(stats_bp, url_prefix='/stats')
 
     return app
 

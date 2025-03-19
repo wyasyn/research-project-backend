@@ -8,9 +8,9 @@ from config import db
 
 recognize_bp = Blueprint('recognize', __name__)
 
-@recognize_bp.route("/<int:modal_id>", methods=["GET"])
-def recognize(modal_id):
-    modal = AttendanceSession.query.get(modal_id)
+@recognize_bp.route("/<int:session_id>", methods=["GET"])
+def recognize(session_id):
+    modal = AttendanceSession.query.get(session_id)
     if not modal:
         return jsonify({"message": "Attendance modal not found."}), 404
 
@@ -43,7 +43,7 @@ def recognize(modal_id):
                     user = User.query.filter_by(user_id=user_id).first()
                     if user:
                         # Check if user is already recorded in this modal
-                        existing_record = AttendanceRecord.query.filter_by(session_id=modal_id, user_id=user.user_id).first()
+                        existing_record = AttendanceRecord.query.filter_by(session_id=session_id, user_id=user.user_id).first()
                         if not existing_record:
                             # Mark attendance
                             attendance = AttendanceRecord(
