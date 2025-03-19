@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app, send_file
+from flask import Blueprint, after_this_request, request, jsonify, current_app, send_file
 import pandas as pd
 from config import db
 from models import AttendanceRecord, AttendanceSession, User
@@ -18,6 +18,9 @@ def get_attendance_sessions():
         # Query attendance modals with pagination
         pagination = AttendanceSession.query.paginate(page=page, per_page=per_page, error_out=False)
         modals = pagination.items
+        
+        if not modals:
+            return jsonify({"attendance_sessions": [], "message": "No attendance sessions found."}), 200
 
         # Prepare the attendance modals list
         data = [
@@ -85,6 +88,8 @@ def get_attendance_records(session_id):
         # Query attendance records with pagination
         pagination = AttendanceRecord.query.filter_by(session_id=session_id).paginate(page=page, per_page=per_page, error_out=False)
         records = pagination.items
+        
+        
 
         # Prepare the records list
         records_data = [
@@ -145,7 +150,10 @@ def download_attendance_session(session_id):
 
     response = send_file(temp_path, as_attachment=True, download_name=f"attendance_session_{session_id}.xlsx")
 
-    os.remove(temp_path)  # 🛠 Delete temp file after sending
+    @after_this_request
+    def cleanup(response):
+        os.remove(temp_path)
+        return response
     return response
 
 # Mark Attendance manually
