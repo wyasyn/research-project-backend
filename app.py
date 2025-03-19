@@ -1,10 +1,12 @@
 from flask import Flask, jsonify
+from flask_migrate import Migrate
 from config import configure_cors, configure_db, db
 from routes.user_routes import user_bp
 from routes.auth_routes import auth_bp
 from routes.recognize_routes import recognize_bp
 from routes.attendance_routes import attendance_bp
 from routes.stats_routes import stats_bp
+
 
 def create_app():
     app = Flask(__name__)
@@ -24,6 +26,9 @@ def create_app():
 
 # Initialize the app
 app = create_app()
+
+# Set up Flask-Migrate
+migrate = Migrate(app, db)
 
 # Create tables (only for development, avoid in production)
 with app.app_context():
