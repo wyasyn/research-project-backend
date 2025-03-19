@@ -1,4 +1,4 @@
-# Face Recognition Attendance System
+# Face Recognition Attendance System Python 3.12
 
 ## 📌 Project Overview
 

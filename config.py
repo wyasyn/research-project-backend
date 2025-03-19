@@ -6,7 +6,7 @@ import os
 # Load environment variables
 load_dotenv()
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 def configure_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://user:password@localhost:5432/attendance_db')
