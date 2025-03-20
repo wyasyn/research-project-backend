@@ -18,7 +18,7 @@ def register():
         password = data.get("password")
         image_url = data.get("image_url")
         organization_id = data.get("organization_id")
-        role = data.get("role", "student")
+        role = data.get("role", "user")
 
         if not user_id or not name or not email or not password or not organization_id:
             return jsonify({"message": "All required fields must be provided."}), 400
