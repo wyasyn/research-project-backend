@@ -6,6 +6,7 @@ from routes.auth_routes import auth_bp
 from routes.recognize_routes import recognize_bp
 from routes.attendance_routes import attendance_bp
 from routes.stats_routes import stats_bp
+from routes.organization_routes import organization_bp
 
 
 def create_app():
@@ -21,6 +22,7 @@ def create_app():
     app.register_blueprint(recognize_bp, url_prefix='/recognize')
     app.register_blueprint(attendance_bp, url_prefix='/attendance')
     app.register_blueprint(stats_bp, url_prefix='/stats')
+    app.register_blueprint(organization_bp, url_prefix='/organizations')
 
     return app
 

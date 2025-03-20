@@ -16,4 +16,6 @@ def configure_db(app):
 
 def configure_cors(app):
     CORS(app, resources={r"/*": {"origins": os.getenv('FRONTEND_URL', 'http://localhost:3000')}})
+    
+SECRET_KEY=os.getenv('SECRET_KEY', 'my-secret-key')
 
