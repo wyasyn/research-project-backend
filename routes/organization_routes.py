@@ -7,8 +7,6 @@ from middleware import admin_required
 organization_bp = Blueprint('organization', __name__)
 
 @organization_bp.route('/', methods=['POST'])
-@jwt_required()
-@admin_required
 def create_organization():
     data = request.get_json()
     if not data.get('name'):

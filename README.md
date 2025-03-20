@@ -99,6 +99,12 @@ flask db upgrade
 python app.py
 ```
 
+### How to create a secret key
+
+```bash
+openssl rand -base64 32
+```
+
 Access the API at: `http://127.0.0.1:5000/`
 
 ## 📌 API Endpoints

@@ -1,16 +1,10 @@
-# Helper function to generate JWT tokens
-import datetime
-
-import jwt
-
-from config import SECRET_KEY
-
+from flask_jwt_extended import create_access_token
 
 def generate_jwt_token(user):
-    payload = {
-        "user_id": user.user_id,
-        "role": user.role,
-        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24),  # Token expires in 24 hours
-        "iat": datetime.datetime.now(datetime.timezone.utc)  # Issued at
-    }
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    # You can add additional claims if needed
+    additional_claims = {"role": user.role}
+
+    # Use create_access_token to generate the token
+    access_token = create_access_token(identity=user.user_id, additional_claims=additional_claims)
+
+    return access_token

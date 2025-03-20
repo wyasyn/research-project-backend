@@ -75,12 +75,6 @@ def login():
         return jsonify({"message": "An error occurred during login."}), 500
 
 
-# Logout Route (Token-Based Authentication)
-@auth_bp.route('/logout', methods=['POST'])
-def logout():
-    # No action required on server side; the client must delete the stored token.
-    return jsonify({"message": "Logout successful"}), 200
-
 
 # Token Verification Route
 @auth_bp.route("/token/verify", methods=["GET"])

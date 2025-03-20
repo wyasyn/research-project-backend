@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_migrate import Migrate
-from config import configure_cors, configure_db, db
+from config import configure_cors, configure_db, configure_jwt, db
 from routes.user_routes import user_bp
 from routes.auth_routes import auth_bp
 from routes.recognize_routes import recognize_bp
@@ -12,9 +12,10 @@ from routes.organization_routes import organization_bp
 def create_app():
     app = Flask(__name__)
 
-    # Configure database and CORS
+    # Configure database, jwt and CORS
     configure_db(app)
     configure_cors(app)
+    configure_jwt(app)
 
     # Register routes
     app.register_blueprint(user_bp, url_prefix='/users')
@@ -39,6 +40,10 @@ with app.app_context():
 @app.route("/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "healthy", "message": "Server is running!"}), 200
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify({"message": "Page not found", "message": str(e)}), 404
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

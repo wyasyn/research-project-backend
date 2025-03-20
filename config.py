@@ -1,21 +1,34 @@
+import datetime
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
+
 
 # Load environment variables
 load_dotenv()
 
 db = SQLAlchemy()
 
+SECRET_KEY=os.getenv('SECRET_KEY')
+
 def configure_db(app):
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://user:password@localhost:5432/attendance_db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
 
 def configure_cors(app):
-    CORS(app, resources={r"/*": {"origins": os.getenv('FRONTEND_URL', 'http://localhost:3000')}})
+    CORS(app, resources={r"/*": {"origins": os.getenv('FRONTEND_URL')}})
     
-SECRET_KEY=os.getenv('SECRET_KEY', 'my-secret-key')
+
+def configure_jwt(app):
+    # JWT Configuration
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']  
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(weeks=1) 
+    
+    # Initialize JWTManager
+    jwt = JWTManager(app)
 
