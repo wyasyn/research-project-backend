@@ -4,6 +4,7 @@
     "dotenv",
     "imencode",
     "isnot",
+    "joinedload",
     "jsonify",
     "MJPEG",
     "tobytes"

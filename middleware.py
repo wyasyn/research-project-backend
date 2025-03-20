@@ -9,9 +9,14 @@ from models import User
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.cookies.get("auth_token")
+        # Extract token from the 'Authorization' header
+        token = request.headers.get("Authorization")
         if not token:
             return jsonify({"error": "Unauthorized"}), 401
+        
+        # Remove the 'Bearer ' prefix if present
+        if token.startswith("Bearer "):
+            token = token.split("Bearer ")[1]
         
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -31,9 +36,14 @@ def admin_required(f):
 def supervisor_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.cookies.get("auth_token")
+        # Extract token from the 'Authorization' header
+        token = request.headers.get("Authorization")
         if not token:
             return jsonify({"error": "Unauthorized"}), 401
+        
+        # Remove the 'Bearer ' prefix if present
+        if token.startswith("Bearer "):
+            token = token.split("Bearer ")[1]
         
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
