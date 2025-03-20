@@ -24,12 +24,19 @@ def register():
         image_url = data.get("image_url")
         role = data.get("role", "user")
 
+        # Check if the user ID already exists
         if User.query.filter_by(user_id=user_id).first():
             return jsonify({"message": "User ID already exists."}), 400
 
+        # Check if the email already exists
+        if User.query.filter_by(email=email).first():
+            return jsonify({"message": "Email already exists."}), 400
+
+        # Check if the organization ID is valid
         if not Organization.query.get(organization_id):
             return jsonify({"message": "Invalid organization ID."}), 404
 
+        # Create new user
         new_user = User(
             user_id=user_id,
             name=name,
@@ -40,9 +47,11 @@ def register():
         )
         new_user.set_password(password)  # Hash password securely
 
+        # Add user to the database
         db.session.add(new_user)
         db.session.commit()
 
+        # Generate JWT token
         token = generate_jwt_token(new_user)
 
         return jsonify({"message": "User registered successfully!", "access_token": token}), 201
@@ -52,20 +61,25 @@ def register():
         return jsonify({"message": "An error occurred during registration."}), 500
 
 
-# Login Route
+# Login route
 @auth_bp.route('/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
-        user_id, password = data.get("user_id"), data.get("password")
+        email, password = data.get("email"), data.get("password")
 
-        if not user_id or not password:
-            return jsonify({"message": "User ID and password are required."}), 400
+        # Check if email and password are provided
+        if not email or not password:
+            return jsonify({"message": "Email and password are required."}), 400
 
-        user = User.query.filter_by(user_id=user_id).first()
+        # Query the user by email
+        user = User.query.filter_by(email=email).first()
+
+        # Check if user exists and password is correct
         if not user or not user.check_password(password):
             return jsonify({"message": "Invalid credentials."}), 401
 
+        # Generate JWT token
         token = generate_jwt_token(user)
 
         return jsonify({"message": "Login successful", "access_token": token}), 200
@@ -73,6 +87,7 @@ def login():
     except Exception as e:
         current_app.logger.error(f"Login error: {e}")
         return jsonify({"message": "An error occurred during login."}), 500
+
 
 
 
