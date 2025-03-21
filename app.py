@@ -1,12 +1,13 @@
 from flask import Flask, jsonify
 from flask_migrate import Migrate
-from config import configure_cors, configure_db, configure_jwt, db
+from config import configure_db, configure_jwt, db
 from routes.user_routes import user_bp
 from routes.auth_routes import auth_bp
 from routes.recognize_routes import recognize_bp
 from routes.attendance_routes import attendance_bp
 from routes.stats_routes import stats_bp
 from routes.organization_routes import organization_bp
+from flask_cors import CORS
 
 
 def create_app():
@@ -14,7 +15,7 @@ def create_app():
 
     # Configure database, jwt and CORS
     configure_db(app)
-    configure_cors(app)
+    # configure_cors(app)
     configure_jwt(app)
 
     # Register routes
@@ -29,6 +30,9 @@ def create_app():
 
 # Initialize the app
 app = create_app()
+
+# Enable CORS
+CORS(app)
 
 # Set up Flask-Migrate
 migrate = Migrate(app, db)
