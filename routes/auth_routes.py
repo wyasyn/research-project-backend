@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify, current_app
+from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from models import User, Organization
 from config import SECRET_KEY, db
 import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 
 from utils.auth_utils import generate_jwt_token
 
@@ -70,14 +72,14 @@ def login():
 
         # Check if email and password are provided
         if not email or not password:
-            return jsonify({"message": "Email and password are required."}), 400
+            return jsonify({"error": "Email and password are required."}), 400
 
         # Query the user by email
         user = User.query.filter_by(email=email).first()
 
         # Check if user exists and password is correct
         if not user or not user.check_password(password):
-            return jsonify({"message": "Invalid credentials."}), 401
+            return jsonify({"error": "Invalid credentials."}), 401
 
         # Generate JWT token
         token = generate_jwt_token(user)
@@ -86,35 +88,26 @@ def login():
 
     except Exception as e:
         current_app.logger.error(f"Login error: {e}")
-        return jsonify({"message": "An error occurred during login."}), 500
+        return jsonify({"error": "An error occurred during login."}), 500
 
 
 
 
 # Token Verification Route
-@auth_bp.route("/token/verify", methods=["GET"])
+@auth_bp.route("/token-verify", methods=["GET"])
+@jwt_required()  # Ensures that the token is required and valid
 def verify_token():
-    """Endpoint to verify JWT token"""
-    token = request.headers.get("Authorization", "").strip()
-
-    if not token:
-        return jsonify({"message": "Token is missing!"}), 401
-
-    if token.startswith("Bearer "):
-        token = token.split("Bearer ")[1]
-
+    """Endpoint to verify JWT token using Flask-JWT-Extended"""
     try:
-        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = get_jwt_identity()  # Extract user identity (user_id)
+        claims = get_jwt()  # Extract additional claims
+
         return jsonify({
             "message": "Token is valid!",
-            "user_id": decoded_token["user_id"],
-            "role": decoded_token["role"]
+            "user_id": user_id,
+            "role": claims.get("role"),  # Extract role claim
+            "exp": claims.get("exp")  # Expiration timestamp
         }), 200
 
-    except jwt.ExpiredSignatureError:
-        return jsonify({"message": "Token has expired!"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"message": "Invalid token!"}), 401
     except Exception as e:
-        current_app.logger.error(f"Token verification error: {e}")
-        return jsonify({"message": "An error occurred during token verification."}), 500
+        return jsonify({"error": f"Token verification failed: {str(e)}"}), 500
